@@ -1,0 +1,72 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:             java-bridge 
+# Required-Start:       $remote_fs $syslog
+# Required-Stop:        $remote_fs $syslog
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Java Bridge 
+# Description:          Java Bridge to PHP
+# Remake By:            iRUL
+# Date:                 11-09-2013
+### END INIT INFO
+
+
+
+# params
+NAME=java-bridge
+DAEMON=/usr/bin/java
+EXT="/usr/lib/jvm/java-8-openjdk-amd64/jre/ext:/opt/javaBridge/jasper-lib"
+JAR="/opt/javaBridge/JavaBridge.jar"
+PORT="8080"
+PIDFILE="/var/run/java-bridge.pid"
+
+daemon_start(){
+	start-stop-daemon --start --quiet --background --pidfile $PIDFILE \
+		--make-pidfile --exec $DAEMON -- -Djava.ext.dirs=$EXT \
+		-jar $JAR SERVLET_LOCAL:$PORT
+    echo "Starting $NAME..."
+}
+ 
+daemon_stop(){
+	start-stop-daemon --stop --quiet --pidfile $PIDFILE
+	echo "Stopping $NAME..."
+}
+ 
+daemon_restart(){
+    daemon_stop
+	sleep 1
+    daemon_start
+    echo "Restarting $NAME complete coi..."
+}
+ 
+daemon_status(){
+    ps ax | grep java
+}
+
+#set -e
+#. /usr/local/etc/java-bridge.sh --oknodo
+
+case "${1}" in
+    start)
+		daemon_start
+        ;;
+
+    stop)
+		daemon_stop
+        ;;
+    restart)
+        daemon_restart
+    ;;
+    status)
+        daemon_status
+    ;;
+    *)
+        N=/etc/init.d/${NAME}
+        echo "Cara peke: ${NAME} {start|stop|restart|status}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
